@@ -2,10 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useShopContext } from "../context/ShopContext";
 import Title from "../components/Title"; // Assuming Title component path is correct
 import { assets } from "../assets/frontend_assets/assets";
+// axios and toast are already handled within ShopContext, no need to import them here
+// import axios from "axios";
+// import { toast } from "react-toastify";
 
 const Cart = () => {
-  // Destructure products (assuming it's available) and cartItems, setCartItems
-  const { products, cartItems, setCartItems, navigate } = useShopContext();
+  // Destructure the necessary functions and state from ShopContext
+  const {
+    products,
+    cartItems,
+    // We will use the context's updateQuantity and removeFromCart
+    updateQuantity: contextUpdateQuantity, // Rename to avoid conflict with local function if needed
+    removeFromCart: contextRemoveFromCart, // Rename to avoid conflict
+    navigate,
+    // backendUrl, // Not needed directly in Cart component for these actions
+    // token,      // Not needed directly in Cart component for these actions
+  } = useShopContext();
+
   const [cartData, setCartData] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
 
@@ -41,44 +54,8 @@ const Cart = () => {
     setSubtotal(newSubtotal);
   }, [cartItems, products]); // Re-run when cartItems or products change
 
-  // Function to update the quantity of an item in the cart
-  const updateQuantity = (productId, size, newQuantity) => {
-    setCartItems((prevCartItems) => {
-      const updatedCart = { ...prevCartItems };
-
-      if (newQuantity <= 0) {
-        // If new quantity is 0 or less, remove the item
-        if (updatedCart[productId]) {
-          delete updatedCart[productId][size];
-          // If no other sizes left for this product, remove the product entry
-          if (Object.keys(updatedCart[productId]).length === 0) {
-            delete updatedCart[productId];
-          }
-        }
-      } else {
-        // Otherwise, update the quantity
-        if (updatedCart[productId]) {
-          updatedCart[productId][size] = newQuantity;
-        }
-      }
-      return updatedCart;
-    });
-  };
-
-  // Function to remove an item completely from the cart
-  const removeItem = (productId, size) => {
-    setCartItems((prevCartItems) => {
-      const updatedCart = { ...prevCartItems };
-      if (updatedCart[productId]) {
-        delete updatedCart[productId][size];
-        // If no other sizes left for this product, remove the product entry
-        if (Object.keys(updatedCart[productId]).length === 0) {
-          delete updatedCart[productId];
-        }
-      }
-      return updatedCart;
-    });
-  };
+  // --- No need for local updateQuantity and removeItem functions here anymore ---
+  // Just call the ones from context directly in the JSX onClick handlers.
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen ">
@@ -119,7 +96,11 @@ const Cart = () => {
                 <div className="flex items-center space-x-2 mr-4">
                   <button
                     onClick={() =>
-                      updateQuantity(item._id, item.size, item.quantity - 1)
+                      contextUpdateQuantity(
+                        item._id,
+                        item.size,
+                        item.quantity - 1
+                      )
                     }
                     className="px-3 py-1 bg-gray-200 cursor-pointer text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none"
                   >
@@ -128,7 +109,11 @@ const Cart = () => {
                   <span className="text-lg font-medium">{item.quantity}</span>
                   <button
                     onClick={() =>
-                      updateQuantity(item._id, item.size, item.quantity + 1)
+                      contextUpdateQuantity(
+                        item._id,
+                        item.size,
+                        item.quantity + 1
+                      )
                     }
                     className="px-3 py-1 bg-gray-200 text-gray-700 cursor-pointer rounded-md hover:bg-gray-300 focus:outline-none"
                   >
@@ -138,13 +123,13 @@ const Cart = () => {
 
                 {/* Remove Button */}
                 <button
-                  onClick={() => removeItem(item._id, item.size)}
+                  onClick={() => contextRemoveFromCart(item._id, item.size)}
                   className="text-red-500 hover:text-red-700 text-sm font-medium focus:outline-none"
                 >
                   <img
                     src={assets.bin_icon}
                     className="size-5 cursor-pointer"
-                    alt=""
+                    alt="Remove item"
                   />
                 </button>
               </div>
@@ -158,7 +143,8 @@ const Cart = () => {
             </h2>
             <div className="flex justify-between items-center mb-6">
               <span className="text-gray-700">Shipping:</span>
-              <span className="text-gray-900">Free</span> {/* Placeholder */}
+              <span className="text-gray-900">Free</span>{" "}
+              {/* This might come from context or be a fixed value */}
             </div>
 
             <div className="flex justify-between items-center mb-3">

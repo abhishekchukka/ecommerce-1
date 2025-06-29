@@ -12,8 +12,13 @@ import Navbar from "./components/Navbar";
 import Collection from "./pages/Collection";
 import Footer from "./components/Footer";
 import Searchbar from "./components/Searchbar";
+import { useShopContext } from "./context/ShopContext";
 
 const App = () => {
+  const { token } = useShopContext();
+  if (!token) {
+    return <Login />;
+  }
   return (
     <div className="px-4 sm:px-[5vw] lg:px-[9vw]">
       <Navbar />
