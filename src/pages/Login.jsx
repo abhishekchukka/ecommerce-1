@@ -9,7 +9,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [formState, setFormState] = useState("login");
   // 'login' or 'signup'
-  const { backendUrl, setToken } = useShopContext();
+  const { backendUrl, setToken, token } = useShopContext();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -17,7 +17,7 @@ const Login = () => {
   });
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
+    if (token) {
       navigate("/");
     }
   }, []);
@@ -35,6 +35,8 @@ const Login = () => {
       e.preventDefault(); // Prevent default form submission behavior
 
       if (formState === "login") {
+        console.log("Login submitted:", formData.email, formData.password);
+
         // Handle login logic here
         const response = await axios.post(
           backendUrl + "/api/user/login",
